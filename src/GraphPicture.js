@@ -10,30 +10,14 @@ class GraphPicture extends React.Component {
     this.svg_width = 960;
   }
 
-
   componentWillMount(){
-    test();
-    this.test();
-    console.log(this.props.modulo);
-    console.log(this.props.a);
+    let graph = createGraph(2,3,3,0,1,7);
+    console.log(graph);
+    console.log(square_of);
+    console.log(root_of);
 
-    this.nodes = [
-      {"id": "0", "name": "0"},
-      {"id": "1", "name": "1"},
-      {"id": "2", "name": "2"},
-      {"id": "3", "name": "3"},
-      {"id": "4", "name": "4"}
-    ]
-    this.links = [
-      {"source": "0", "target": "1"},
-      {"source": "0", "target": "2"},
-      {"source": "0", "target": "3"},
-      {"source": "4", "target": "1"}
-    ];
-  }
-
-  test(){
-    console.log("Another test");
+    this.nodes = graph.nodes;
+    this.links = graph.links;
   }
 
   componentDidMount(){
@@ -48,7 +32,7 @@ class GraphPicture extends React.Component {
     const graph = this.graph;
 
     var simulation = d3.forceSimulation()
-    .force("link",d3.forceLink().id(function(d){ return d.id;}))
+    .force("link",d3.forceLink().id(function(d){ return d.id;}).distance(100))
     .force("charge", d3.forceManyBody())
     .force("center", d3.forceCenter(this.svg_width/2,this.svg_height/2))
     .on("tick", ticked)
@@ -97,10 +81,10 @@ class GraphPicture extends React.Component {
   .enter().append("marker")    // This section adds in the arrows
     .attr("id", String)
     .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 15)
-    .attr("refY", -1.5)
-    .attr("markerWidth", 6)
-    .attr("markerHeight", 6)
+    .attr("refX", 30)
+    .attr("refY", -2.5)
+    .attr("markerWidth", 5)
+    .attr("markerHeight", 5)
     .attr("orient", "auto")
   .append("svg:path")
     .attr("d", "M0,-5L10,0L0,5");
@@ -118,47 +102,54 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
         .style("stroke-width","1.5px")
 
 
-// define the nodes
-var node = d3.select(graph).selectAll(".node")
-    .data(this.nodes)
-  .enter().append("g")
-    .attr("class", "node")
-    .call(d3.drag);
+    // define the nodes
+    var node = d3.select(graph).selectAll(".node")
+      .data(this.nodes)
+      .enter().append("g")
+      .attr("class", "node")
 
-// add the nodes
-node.append("circle")
-    .attr("r", 5)
-    .style("fill","#ccc")
-    .style("stroke","#fff")
-    .style("stroke-width","1.5px")
+    // add the nodes
+    node.append("circle")
+        .attr("r", 14)
+        .style("fill","#ccc")
+        .style("stroke","#fff")
+        .style("stroke-width","1.5px")
 
-// add the text
-node.append("text")
-    .attr("x", 12)
-    .attr("dy", ".35em")
-    .text(function(d) { return d.name; })
-    .style("fill","#000")
-    .style("font","10px sans-serif")
-    .style("pointer-events: none")
+    // add the label
+    node.append("text")
+        .attr("x", 0)
+        .attr("y", 5)
+        .attr("text-anchor","middle")
+        .text(function(d) { return d.id; })
+        .style("fill","#000")
+        .style("font","14px sans-serif")
+        .style("pointer-events: none")
 
 // add the curvy lines
-function ticked() {
-    path.attr("d", function(d) {
-        var dx = d.target.x - d.source.x,
-            dy = d.target.y - d.source.y,
-            dr = Math.sqrt(dx * dx + dy * dy);
-        return "M" +
-            d.source.x + "," +
-            d.source.y + "A" +
-            dr + "," + dr + " 0 0,1 " +
-            d.target.x + "," +
-            d.target.y;
-    });
+    function ticked() {
+      path.attr("d", function(d) {
+          var dx = d.target.x - d.source.x,
+              dy = d.target.y - d.source.y,
+              dr = Math.sqrt(dx * dx + dy * dy);
+            console.log("M" +
+                            d.source.x + "," +
+                            d.source.y + "A" +
+                            dr + "," + dr + " 0 0,1 " +
+                            d.target.x + "," +
+                            d.target.y);
+            return "M" +
+                d.source.x + "," +
+                d.source.y + "A" +
+                //dr + "," + dr + " 0 0,1 " +
+                dr + "," + dr + " 0 0,1 " +
+                d.target.x + "," +
+                d.target.y;
+            });
 
-    node
-        .attr("transform", function(d) {
-  	    return "translate(" + d.x + "," + d.y + ")"; });
-    }
+      node
+          .attr("transform", function(d) {
+    	    return "translate(" + d.x + "," + d.y + ")"; });
+      }
 
  }
 
@@ -176,9 +167,78 @@ function ticked() {
   }
 }
 
-let squares = [];
-function test(){
-  console.log("Tested");
+let square_of = [];
+let root_of = [];
+
+// The following function creates the graph for the equation
+//  y^m = x^n + b*x + a           (mod p)
+//  y^m = lambda * x^n + b*x + a  (mod p)
+// where lambda is a quadratic nonresidue
+// Thus the parameters for this function are m, n, lambda, b, a, and the modulus p
+
+function createGraph(m,n,lambda,b,a,p){
+
+  // compute the square_of table
+  for (let i = 0; i <= (p-1)/2; i++){
+    square_of[i] = (i * i) % p;
+    square_of[p-i] = square_of[i];
+  }
+
+  // compute the root_of table (set root to be -1 for quadratic nonresidues)
+  for (let i = 0; i < p; i++){
+    root_of[i] = -1;
+  }
+  for (let i = 0; i <= (p-1)/2; i++){
+    root_of[square_of[i]] = i;
+  }
+
+  // these are the nodes for the graph (simply 0 to p-1)
+  let nodes = [];
+  for (let x = 0; x < p; x++){
+    nodes.push({id:x});
+  }
+
+
+  // these are the links between the nodes
+  let links = [];
+  for (let x = 0; x < p; x++){
+
+    // compute rhs = x^n + bx + a mod p
+    let rhs = 1;
+    for (let exp = 0; exp < n; exp++){
+      rhs = (rhs * x) % p;
+    }
+    rhs = (rhs + b*x + a) % p
+
+    // if rhs is not a quadratic residue, multiply by lambda
+    if (root_of[rhs] === -1){
+      rhs = (rhs * lambda) % p;
+      let y1 = root_of[rhs];
+      let y2 = (p - y1) % p;
+      //console.log("red " + rhs +  " " + y1 + " " + y2);
+      links.push({source:x,target:y1,colour:"red"})
+      links.push({source:x,target:y2,colour:"red"})
+    }
+    else{
+      let y1 = root_of[rhs];
+      let y2 = (p - y1) % p;
+      //console.log("black " + rhs + " " + y1 + " " + y2);
+      links.push({source:x,target:y1,colour:"black"})
+      links.push({source:x,target:y2,colour:"black"})
+    }
+  }
+  console.log(links);
+
+  /*
+  links = [
+    {source: 0, target: 1},
+    {source: 0, target: 2},
+    {source: 0, target: 3},
+    {source: 4, target: 1}
+  ];
+  */
+  console.log(links);
+  return {nodes: nodes, links: links};
 }
 
 export default GraphPicture;

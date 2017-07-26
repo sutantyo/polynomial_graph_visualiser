@@ -11,10 +11,7 @@ class GraphPicture extends React.Component {
   }
 
   componentWillMount(){
-    let graph = createGraph(2,3,3,0,1,7);
-    console.log(graph);
-    console.log(square_of);
-    console.log(root_of);
+    let graph = createGraph(1,2,3,0,1,7);
 
     this.nodes = graph.nodes;
     this.links = graph.links;
@@ -131,16 +128,9 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
           var dx = d.target.x - d.source.x,
               dy = d.target.y - d.source.y,
               dr = Math.sqrt(dx * dx + dy * dy);
-            console.log("M" +
-                            d.source.x + "," +
-                            d.source.y + "A" +
-                            dr + "," + dr + " 0 0,1 " +
-                            d.target.x + "," +
-                            d.target.y);
             return "M" +
                 d.source.x + "," +
                 d.source.y + "A" +
-                //dr + "," + dr + " 0 0,1 " +
                 dr + "," + dr + " 0 0,1 " +
                 d.target.x + "," +
                 d.target.y;
@@ -157,7 +147,7 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
   render(){
     return (
       <div>
-        <h2> Graph picture goes here </h2>
+        <h2> Graph visualiser</h2>
         a is {this.props.a}
         mod is {this.props.modulo}
         <svg ref={graph => this.graph = graph} width={this.svg_width} height={this.svg_height}>
@@ -227,7 +217,6 @@ function createGraph(m,n,lambda,b,a,p){
       links.push({source:x,target:y2,colour:"black"})
     }
   }
-  console.log(links);
 
   /*
   links = [

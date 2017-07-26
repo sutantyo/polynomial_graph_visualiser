@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import './App.css';
 
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 
 
@@ -16,26 +15,29 @@ class App extends Component {
     super();
     this.inputHandler = this.inputHandler.bind(this);
     this.state = {
-      n: 2,
-      m: 3,
-      lambda: 3,
-      b: 0,
-      a: 1,
-      p: 7
+      parameters : {  m: 2,
+                      lambda: 3,
+                      b: 0,
+                      a: 1,
+                      modulo: 7
+                    }
     }
   }
 
-  inputHandler(parameters){
-    console.log(parameters);
+  inputHandler(updated_parameters){
+    this.setState({
+        parameters : updated_parameters
+      }
+    );
   }
 
   render() {
     return (
       <MuiThemeProvider>
         <div className="App">
-          <InputPanel onInput={this.inputHandler.bind(this)} >
+          <InputPanel onInput={this.inputHandler.bind(this)} defaultParameters={this.state.parameters} >
           </InputPanel>
-          <GraphPicture>
+          <GraphPicture parameters={this.state.parameters}>
           </GraphPicture>
         </div>
       </MuiThemeProvider>

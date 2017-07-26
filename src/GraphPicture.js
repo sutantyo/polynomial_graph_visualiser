@@ -6,13 +6,16 @@ class GraphPicture extends React.Component {
   constructor(){
     super();
     this.drawGraph = this.drawGraph.bind(this);
-    this.svg_height = 480;
+    this.svg_height = 800;
     this.svg_width = 960;
   }
 
   componentWillMount(){
-    let graph = createGraph(1,2,3,0,1,7);
-
+    let graph = createGraph(this.props.parameters.m,
+                            this.props.parameters.lambda,
+                            this.props.parameters.b,
+                            this.props.parameters.a,
+                            this.props.parameters.modulo);
     this.nodes = graph.nodes;
     this.links = graph.links;
   }
@@ -22,6 +25,15 @@ class GraphPicture extends React.Component {
   }
 
   componentDidUpdate(){
+    d3.select(this.graph).selectAll('*').remove();
+    let graph = createGraph(this.props.parameters.m,
+                            this.props.parameters.lambda,
+                            this.props.parameters.b,
+                            this.props.parameters.a,
+                            this.props.parameters.modulo);
+    this.nodes = graph.nodes;
+    this.links = graph.links;
+
     this.drawGraph();
   }
 
@@ -124,7 +136,8 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
 
 // add the curvy lines
     function ticked() {
-      path.attr("d", function(d) {
+      path
+        .attr("d", function(d) {
           let x1 = d.source.x,
               y1 = d.source.y,
               x2 = d.target.x,
@@ -139,19 +152,20 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
               largeArc = 0,
               sweep = 0;
 
-          if (d.source.x == d.target.x && d.source.y == d.target.y){
+          if (d.source.x === d.target.x && d.source.y === d.target.y){
               xRotation = 40;
               largeArc = 1;
               drx = 18;
               dry = 18;
               sweep = 0;
-              x2 = x2-1;
+              x2 = x2-5;
               y2 = y2-1;
           }
           return "M" + x1 + "," + y1 +
             "A" + drx + "," + dry + " " + xRotation + "," + largeArc + "," + sweep + " " +
             x2 + "," + y2;
-      });
+      })
+        .style("stroke",function(d){ return d.colour});
 
 
       node
@@ -161,13 +175,23 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
 
  }
 
-
   render(){
+    let bx = "";
+    if (this.props.parameters.b === 1)
+      bx = "+ x";
+    if (this.props.parameters.b > 1)
+      bx = "+ " + this.props.parameters.b+ "x";
+
     return (
       <div>
-        <h2> Graph visualiser</h2>
-        a is {this.props.a}
-        mod is {this.props.modulo}
+        <h2> Graph Visualiser </h2>
+        <div> y = x<sup>{this.props.parameters.m}</sup> {bx} +
+                {this.props.parameters.a} modulo {this.props.parameters.modulo}
+        </div>
+        <br />
+        <div> y = {this.props.parameters.lambda}x<sup>{this.props.parameters.m}</sup> {bx} +
+                {this.props.parameters.a} modulo {this.props.parameters.modulo}
+        </div>
         <svg ref={graph => this.graph = graph} width={this.svg_width} height={this.svg_height}>
         </svg>
       </div>
@@ -175,76 +199,37 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
   }
 }
 
-let square_of = [];
-let root_of = [];
-
 // The following function creates the graph for the equation
 //  y^m = x^n + b*x + a           (mod p)
 //  y^m = lambda * x^n + b*x + a  (mod p)
 // where lambda is a quadratic nonresidue
 // Thus the parameters for this function are m, n, lambda, b, a, and the modulus p
 
-function createGraph(m,n,lambda,b,a,p){
-
-  // compute the square_of table
-  for (let i = 0; i <= (p-1)/2; i++){
-    square_of[i] = (i * i) % p;
-    square_of[p-i] = square_of[i];
-  }
-
-  // compute the root_of table (set root to be -1 for quadratic nonresidues)
-  for (let i = 0; i < p; i++){
-    root_of[i] = -1;
-  }
-  for (let i = 0; i <= (p-1)/2; i++){
-    root_of[square_of[i]] = i;
-  }
-
-  // these are the nodes for the graph (simply 0 to p-1)
+function createGraph(m,lambda,b,a,p){
+  // create the nodes for the graph (i.e. 0 to p-1)
   let nodes = [];
   for (let x = 0; x < p; x++){
     nodes.push({id:x});
   }
 
-
-  // these are the links between the nodes
+  // create the links between the nodes
   let links = [];
   for (let x = 0; x < p; x++){
 
-    // compute rhs = x^n + bx + a mod p
+    // compute rhs = x^n
     let rhs = 1;
-    for (let exp = 0; exp < n; exp++){
+    for (let exp = 0; exp < m; exp++){
       rhs = (rhs * x) % p;
     }
-    rhs = (rhs + b*x + a) % p
 
-    // if rhs is not a quadratic residue, multiply by lambda
-    if (root_of[rhs] === -1){
-      rhs = (rhs * lambda) % p;
-      let y1 = root_of[rhs];
-      let y2 = (p - y1) % p;
-      //console.log("red " + rhs +  " " + y1 + " " + y2);
-      links.push({source:x,target:y1,colour:"red"})
-      links.push({source:x,target:y2,colour:"red"})
-    }
-    else{
-      let y1 = root_of[rhs];
-      let y2 = (p - y1) % p;
-      //console.log("black " + rhs + " " + y1 + " " + y2);
-      links.push({source:x,target:y1,colour:"black"})
-      links.push({source:x,target:y2,colour:"black"})
-    }
+    // compute y1 = x^n + bx + a mod p
+    let y1 = (rhs + b*x + a) % p;
+    links.push({source:x,target:y1,colour:"gray"})
+
+    // compute y1 = lambda * x^n + bx + a mod p
+    let y2 = (lambda * rhs + b*x + a) % p;
+    links.push({source:x,target:y2,colour:"orange"})
   }
-
-  /*
-  links = [
-    {source: 0, target: 1},
-    {source: 0, target: 2},
-    {source: 0, target: 3},
-    {source: 4, target: 1}
-  ];
-  */
-  console.log(links);
   return {nodes: nodes, links: links};
 }
 

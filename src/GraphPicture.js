@@ -29,7 +29,7 @@ class GraphPicture extends React.Component {
     const graph = this.graph;
 
     var simulation = d3.forceSimulation()
-    .force("link",d3.forceLink().id(function(d){ return d.id;}).distance(100))
+    .force("link",d3.forceLink().id(function(d){ return d.id;}).distance(200).strength(0.01))
     .force("charge", d3.forceManyBody())
     .force("center", d3.forceCenter(this.svg_width/2,this.svg_height/2))
     .on("tick", ticked)
@@ -79,7 +79,7 @@ class GraphPicture extends React.Component {
     .attr("id", String)
     .attr("viewBox", "0 -5 10 10")
     .attr("refX", 30)
-    .attr("refY", -2.5)
+    .attr("refY", 1)
     .attr("markerWidth", 5)
     .attr("markerHeight", 5)
     .attr("orient", "auto")
@@ -125,16 +125,34 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
 // add the curvy lines
     function ticked() {
       path.attr("d", function(d) {
-          var dx = d.target.x - d.source.x,
-              dy = d.target.y - d.source.y,
-              dr = Math.sqrt(dx * dx + dy * dy);
-            return "M" +
-                d.source.x + "," +
-                d.source.y + "A" +
-                dr + "," + dr + " 0 0,1 " +
-                d.target.x + "," +
-                d.target.y;
-            });
+          let x1 = d.source.x,
+              y1 = d.source.y,
+              x2 = d.target.x,
+              y2 = d.target.y,
+              dx = x2 - x1,
+              dy = y2 - y1,
+              dr = Math.sqrt(dx * dx + dy * dy),
+
+              drx = 2*dr,
+              dry = 2*dr,
+              xRotation = 0,
+              largeArc = 0,
+              sweep = 0;
+
+          if (d.source.x == d.target.x && d.source.y == d.target.y){
+              xRotation = 40;
+              largeArc = 1;
+              drx = 18;
+              dry = 18;
+              sweep = 0;
+              x2 = x2-1;
+              y2 = y2-1;
+          }
+          return "M" + x1 + "," + y1 +
+            "A" + drx + "," + dry + " " + xRotation + "," + largeArc + "," + sweep + " " +
+            x2 + "," + y2;
+      });
+
 
       node
           .attr("transform", function(d) {

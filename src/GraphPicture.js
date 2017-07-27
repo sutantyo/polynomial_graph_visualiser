@@ -6,7 +6,7 @@ class GraphPicture extends React.Component {
   constructor(){
     super();
     this.drawGraph = this.drawGraph.bind(this);
-    this.svg_height = 800;
+    this.svg_height = 500;
     this.svg_width = 960;
   }
 
@@ -167,7 +167,6 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
       })
         .style("stroke",function(d){ return d.colour});
 
-
       node
           .attr("transform", function(d) {
     	    return "translate(" + d.x + "," + d.y + ")"; });
@@ -176,21 +175,36 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
  }
 
   render(){
+    let mx = "";
+    if (this.props.parameters.m > 0)
+      mx = mx + "x<sup>" + this.props.parameters.m + "</sup>";
+
+    let lx = "";
+    if (this.props.parameters.lambda > 1)
+      lx = lx + this.props.parameters.lambda+"x<sup>" + this.props.parameters.m + "</sup>";
+    else if (this.props.parameters.lambda === 1)
+      lx = lx + "x<sup>" + this.props.parameters.m + "</sup>";
+
     let bx = "";
     if (this.props.parameters.b === 1)
-      bx = "+ x";
+      bx = " + x";
     if (this.props.parameters.b > 1)
-      bx = "+ " + this.props.parameters.b+ "x";
+      bx = " + " + this.props.parameters.b+ "x";
+
+    let ax = "";
+    if (this.props.parameters.a > 0)
+      ax = " + " + this.props.parameters.a;
+
+    let mod = " modulo " + this.props.parameters.modulo;
+
 
     return (
       <div>
         <h2> Graph Visualiser </h2>
-        <div> y = x<sup>{this.props.parameters.m}</sup> {bx} +
-                {this.props.parameters.a} modulo {this.props.parameters.modulo}
+        <div> y = <span dangerouslySetInnerHTML={{__html:mx}}></span>{bx}{ax}{mod}
         </div>
         <br />
-        <div> y = {this.props.parameters.lambda}x<sup>{this.props.parameters.m}</sup> {bx} +
-                {this.props.parameters.a} modulo {this.props.parameters.modulo}
+        <div> y = <span dangerouslySetInnerHTML={{__html:lx}}></span>{bx}{ax}{mod}
         </div>
         <svg ref={graph => this.graph = graph} width={this.svg_width} height={this.svg_height}>
         </svg>
@@ -204,28 +218,24 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
 //  y^m = lambda * x^n + b*x + a  (mod p)
 // where lambda is a quadratic nonresidue
 // Thus the parameters for this function are m, n, lambda, b, a, and the modulus p
-
 function createGraph(m,lambda,b,a,p){
+  //console.log("m: " + m + ", lambda: " + lambda + ", b: " + b + ", a: " + a + ",p: " + p);
   // create the nodes for the graph (i.e. 0 to p-1)
   let nodes = [];
   for (let x = 0; x < p; x++){
     nodes.push({id:x});
   }
-
   // create the links between the nodes
   let links = [];
   for (let x = 0; x < p; x++){
-
     // compute rhs = x^n
     let rhs = 1;
     for (let exp = 0; exp < m; exp++){
       rhs = (rhs * x) % p;
     }
-
     // compute y1 = x^n + bx + a mod p
     let y1 = (rhs + b*x + a) % p;
     links.push({source:x,target:y1,colour:"gray"})
-
     // compute y1 = lambda * x^n + bx + a mod p
     let y2 = (lambda * rhs + b*x + a) % p;
     links.push({source:x,target:y2,colour:"orange"})

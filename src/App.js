@@ -16,10 +16,10 @@ class App extends Component {
     this.inputHandler = this.inputHandler.bind(this);
     this.state = {
       parameters : {  m: 2,
-                      lambda: 3,
+                      lambda: 2,
                       b: 0,
-                      a: 1,
-                      modulo: 7
+                      a: 0,
+                      modulo: 5
                     }
     }
   }

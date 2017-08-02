@@ -15,10 +15,10 @@ class App extends Component {
     super();
     this.inputHandler = this.inputHandler.bind(this);
     this.state = {
-      parameters : {  m: 2,
+      parameters : {  m: 3,
                       lambda: 2,
-                      b: 0,
                       a: 0,
+                      b: 0,
                       modulo: 5
                     }
     }

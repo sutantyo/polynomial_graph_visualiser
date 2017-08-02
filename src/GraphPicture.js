@@ -6,15 +6,15 @@ class GraphPicture extends React.Component {
   constructor(){
     super();
     this.drawGraph = this.drawGraph.bind(this);
-    this.svg_height = 500;
+    this.svg_height = 800;
     this.svg_width = 960;
   }
 
   componentWillMount(){
     let graph = createGraph(this.props.parameters.m,
                             this.props.parameters.lambda,
-                            this.props.parameters.b,
                             this.props.parameters.a,
+                            this.props.parameters.b,
                             this.props.parameters.modulo);
     this.nodes = graph.nodes;
     this.links = graph.links;
@@ -28,8 +28,8 @@ class GraphPicture extends React.Component {
     d3.select(this.graph).selectAll('*').remove();
     let graph = createGraph(this.props.parameters.m,
                             this.props.parameters.lambda,
-                            this.props.parameters.b,
                             this.props.parameters.a,
+                            this.props.parameters.b,
                             this.props.parameters.modulo);
     this.nodes = graph.nodes;
     this.links = graph.links;
@@ -45,7 +45,6 @@ class GraphPicture extends React.Component {
     .force("charge", d3.forceManyBody())
     .force("center", d3.forceCenter(this.svg_width/2,this.svg_height/2))
     .on("tick", ticked)
-
 
     simulation
     .nodes(d3.values(this.nodes))
@@ -179,21 +178,17 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
     if (this.props.parameters.m > 0)
       mx = mx + "x<sup>" + this.props.parameters.m + "</sup>";
 
-    let lx = "";
-    if (this.props.parameters.lambda > 1)
-      lx = lx + this.props.parameters.lambda+"x<sup>" + this.props.parameters.m + "</sup>";
-    else if (this.props.parameters.lambda === 1)
-      lx = lx + "x<sup>" + this.props.parameters.m + "</sup>";
-
-    let bx = "";
-    if (this.props.parameters.b === 1)
-      bx = " + x";
-    if (this.props.parameters.b > 1)
-      bx = " + " + this.props.parameters.b+ "x";
+    let lx = this.props.parameters.lambda;
 
     let ax = "";
-    if (this.props.parameters.a > 0)
-      ax = " + " + this.props.parameters.a;
+    if (this.props.parameters.a === 1)
+      ax = " + x";
+    if (this.props.parameters.a > 1)
+      ax = " + " + this.props.parameters.a+ "x";
+
+    let bx = "";
+    if (this.props.parameters.b > 0)
+      bx = " + " + this.props.parameters.b;
 
     let mod = " modulo " + this.props.parameters.modulo;
 
@@ -201,10 +196,10 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
     return (
       <div>
         <h2> Graph Visualiser </h2>
-        <div> y = <span dangerouslySetInnerHTML={{__html:mx}}></span>{bx}{ax}{mod}
+        <div> y<sup>2</sup> = <span dangerouslySetInnerHTML={{__html:mx}}></span>{ax}{bx}{mod}
         </div>
         <br />
-        <div> y = <span dangerouslySetInnerHTML={{__html:lx}}></span>{bx}{ax}{mod}
+        <div> {lx}y<sup>2</sup> = <span dangerouslySetInnerHTML={{__html:mx}}></span>{ax}{bx}{mod}
         </div>
         <svg ref={graph => this.graph = graph} width={this.svg_width} height={this.svg_height}>
         </svg>
@@ -213,6 +208,74 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
   }
 }
 
+let square_of = [];
+let square_root_of = [];
+let inverse_of = [];
+
+// The following function creates the graph for the equation
+//          y^2 = x^3 + b*x + a           (mod p)
+//  \lambda y^2 = x^3 + b*x + a  (mod p)
+// where lambda is a quadratic nonresidue
+// Thus the parameters for this function are m, n, lambda, b, a, and the modulus p
+function createGraph(m,lambda,a,b,p){
+  // compute the square_of table
+   for (let i = 0; i <= (p-1)/2; i++){
+     square_of[i] = (i * i) % p;
+     square_of[p-i] = square_of[i];
+   }
+
+   // compute the root_of table (set root to be -1 for quadratic nonresidues)
+   for (let i = 0; i < p; i++){
+     square_root_of[i] = -1;
+   }
+   for (let i = 0; i <= (p-1)/2; i++){
+     square_root_of[square_of[i]] = i;
+   }
+
+   // finding inverses (for lambda) ... in a stupid way
+   inverse_of[0] = 0;
+   for (let i = 1; i < p; i++){
+     for (let j = 1; j < p; j++){
+       if ((i * j) % p === 1){
+         inverse_of[i] = j;
+         break;
+       }
+     }
+   }
+
+  // create the nodes for the graph (i.e. 0 to p-1)
+  let nodes = [];
+  for (let x = 0; x < p; x++){
+    nodes.push({id:x});
+  }
+  // create the links between the nodes
+  let links = [];
+  for (let x = 0; x < p; x++){
+    // compute rhs = x^3 + ax + b
+    let rhs = (x*x*x + a*x + b)%p;
+    // if rhs is a quadratic nonresidue, multiply by inverse of lambda
+    let edge_colour = "gray";
+    if (square_root_of[rhs] === -1){
+        rhs = (inverse_of[lambda] * rhs)%p;
+        edge_colour = "orange";
+    }
+
+    console.log("rhs is " + rhs);
+    let y1 = square_root_of[rhs];
+    console.log("added x: " + x + ", y1: " + y1);
+    links.push({source:x,target:y1,colour:edge_colour});
+    // compute y1 = lambda * x^n + bx + a mod p
+    let y2 = (p - y1) % p;
+    console.log("added x: " + x + ", y2: " + y2);
+    links.push({source:x,target:y2,colour:edge_colour});
+
+  }
+  console.log("m: " + m + ", lambda: " + lambda + ", a: " + a + ", b: " + b + ",p: " + p);
+  console.log("inverse of lambda: " + inverse_of[lambda]);
+    console.log(links);
+  return {nodes: nodes, links: links};
+}
+/* Deactivated code
 // The following function creates the graph for the equation
 //  y^m = x^n + b*x + a           (mod p)
 //  y^m = lambda * x^n + b*x + a  (mod p)
@@ -242,5 +305,6 @@ function createGraph(m,lambda,b,a,p){
   }
   return {nodes: nodes, links: links};
 }
+*/
 
 export default GraphPicture;

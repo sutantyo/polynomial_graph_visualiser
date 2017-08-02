@@ -14,8 +14,8 @@ class InputPanel extends React.Component {
     componentWillMount(){
       this.m = this.props.defaultParameters.m;
       this.lambda = this.props.defaultParameters.lambda;
-      this.b = this.props.defaultParameters.b;
       this.a = this.props.defaultParameters.a;
+      this.b = this.props.defaultParameters.b;
       this.modulo = this.props.defaultParameters.modulo;
     }
 
@@ -23,8 +23,8 @@ class InputPanel extends React.Component {
       let parameters = {
         m: this.m,
         lambda: this.lambda,
-        b: this.b,
         a: this.a,
+        b: this.b,
         modulo: this.modulo
       }
       this.props.onInput(parameters);
@@ -34,28 +34,22 @@ class InputPanel extends React.Component {
       return(
         <div>
           <span>
-            <TextField defaultValue={this.m}
-                      style={inputBoxStyle}
-                      floatingLabelText="m"
-                      onChange={(e) => this.m = parseInt(e.target.value)}/>
-          </span>
-          <span>
             <TextField defaultValue={this.lambda}
                       style={inputBoxStyle}
                       floatingLabelText="lambda"
                       onChange={(e) => this.lambda = parseInt(e.target.value)}/>
           </span>
           <span>
-            <TextField defaultValue={this.b}
-                      style={inputBoxStyle}
-                      floatingLabelText="b"
-                      onChange={(e) => this.b = parseInt(e.target.value)}/>
-          </span>
-          <span>
             <TextField defaultValue={this.a}
                       style={inputBoxStyle}
                       floatingLabelText="a"
                       onChange={(e) => this.a = parseInt(e.target.value)}/>
+          </span>
+          <span>
+            <TextField defaultValue={this.b}
+                      style={inputBoxStyle}
+                      floatingLabelText="b"
+                      onChange={(e) => this.b = parseInt(e.target.value)}/>
           </span>
           <span>
             <TextField defaultValue={this.modulo}

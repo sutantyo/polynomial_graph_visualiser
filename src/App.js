@@ -14,19 +14,29 @@ class App extends Component {
   constructor(){
     super();
     this.inputHandler = this.inputHandler.bind(this);
+    this.curveDrawer = this.curveDrawer.bind(this);
     this.state = {
       parameters : {  m: 3,
                       lambda: 2,
                       a: 0,
                       b: 0,
                       modulo: 5
-                    }
+                    },
+      points : {}
     }
   }
 
   inputHandler(updated_parameters){
     this.setState({
         parameters : updated_parameters
+      }
+    );
+  }
+
+  curveDrawer(updated_points){
+    this.setState(
+      {
+        points : updated_points
       }
     );
   }

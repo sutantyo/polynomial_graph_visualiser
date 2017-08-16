@@ -21,8 +21,8 @@ class InputPanel extends React.Component {
 
     onClick(){
       let parameters = {
-        m: this.m,
         lambda: this.lambda,
+        m: this.m,
         a: this.a,
         b: this.b,
         modulo: this.modulo
@@ -38,6 +38,12 @@ class InputPanel extends React.Component {
                       style={inputBoxStyle}
                       floatingLabelText="lambda"
                       onChange={(e) => this.lambda = parseInt(e.target.value)}/>
+          </span>
+          <span>
+            <TextField defaultValue={this.lambda}
+                      style={inputBoxStyle}
+                      floatingLabelText="m"
+                      onChange={(e) => this.m = parseInt(e.target.value)}/>
           </span>
           <span>
             <TextField defaultValue={this.a}

@@ -1,6 +1,8 @@
 import React from 'react';
 import * as d3 from 'd3';
+
 //import { select } from 'd3-selection';
+import CurvePicture from './CurvePicture';
 
 class GraphPicture extends React.Component {
   constructor(){
@@ -18,6 +20,7 @@ class GraphPicture extends React.Component {
                             this.props.parameters.modulo);
     this.nodes = graph.nodes;
     this.links = graph.links;
+    this.points = graph.points;
   }
 
   componentDidMount(){
@@ -33,6 +36,8 @@ class GraphPicture extends React.Component {
                             this.props.parameters.modulo);
     this.nodes = graph.nodes;
     this.links = graph.links;
+    this.points = graph.points;
+    console.log(this.points);
 
     this.drawGraph();
   }
@@ -203,6 +208,8 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
         </div>
         <svg ref={graph => this.graph = graph} width={this.svg_width} height={this.svg_height}>
         </svg>
+        <CurvePicture points={this.points} parameters={this.props.parameters}>
+        </CurvePicture>
       </div>
     )
   }
@@ -218,13 +225,14 @@ let inverse_of = [];
 // where lambda is a quadratic nonresidue
 // Thus the parameters for this function are m, n, lambda, b, a, and the modulus p
 function createGraph(m,lambda,a,b,p){
+
   // compute the square_of table
    for (let i = 0; i <= (p-1)/2; i++){
      square_of[i] = (i * i) % p;
      square_of[p-i] = square_of[i];
    }
 
-   // compute the root_of table (set root to be -1 for quadratic nonresidues)
+   // compute the root_of table (set square root of quadratic nonresidues to -1)
    for (let i = 0; i < p; i++){
      square_root_of[i] = -1;
    }
@@ -250,9 +258,14 @@ function createGraph(m,lambda,a,b,p){
   }
   // create the links between the nodes
   let links = [];
+  let points = new Set();
   for (let x = 0; x < p; x++){
-    // compute rhs = x^3 + ax + b
-    let rhs = (x*x*x + a*x + b)%p;
+    // compute rhs = x^m + ax + b
+    let rhs = 1;
+    for (let exp = 0; exp < m; exp++){
+        rhs = (rhs * x) % p;
+    }
+    rhs = (rhs + a*x + b)%p;
     // if rhs is a quadratic nonresidue, multiply by inverse of lambda
     let edge_colour = "gray";
     if (square_root_of[rhs] === -1){
@@ -260,20 +273,24 @@ function createGraph(m,lambda,a,b,p){
         edge_colour = "orange";
     }
 
-    console.log("rhs is " + rhs);
+    //console.log("rhs is " + rhs);
     let y1 = square_root_of[rhs];
-    console.log("added x: " + x + ", y1: " + y1);
+    //console.log("added x: " + x + ", y1: " + y1);
     links.push({source:x,target:y1,colour:edge_colour});
     // compute y1 = lambda * x^n + bx + a mod p
     let y2 = (p - y1) % p;
-    console.log("added x: " + x + ", y2: " + y2);
+    //console.log("added x: " + x + ", y2: " + y2);
     links.push({source:x,target:y2,colour:edge_colour});
 
+    points.add([x,y1]);
+    points.add([x,y2]);
   }
+  /*
   console.log("m: " + m + ", lambda: " + lambda + ", a: " + a + ", b: " + b + ",p: " + p);
   console.log("inverse of lambda: " + inverse_of[lambda]);
     console.log(links);
-  return {nodes: nodes, links: links};
+    */
+  return {nodes: nodes, links: links, points: points};
 }
 /* Deactivated code
 // The following function creates the graph for the equation

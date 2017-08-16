@@ -27,8 +27,8 @@ class CurvePicture extends React.Component {
   }
 
   componentDidUpdate(){
-    /*
     d3.select(this.curve).selectAll('*').remove();
+    /*
     let graph = createGraph(this.props.parameters.m,
                             this.props.parameters.lambda,
                             this.props.parameters.a,
@@ -44,15 +44,15 @@ class CurvePicture extends React.Component {
     console.log(this.props.points);
     let modulo = this.props.parameters.modulo;
     const curve = this.curve;
-    let xScale = d3.scaleLinear().domain([0,modulo-1]).range([0, this.svg_width/2]);
-    let xAxis = d3.axisBottom(xScale);
+    let xScale = d3.scaleLinear().domain([0,modulo-1]).range([0, 3/4*this.svg_width]);
+    let xAxis = d3.axisBottom(xScale).ticks(modulo-1);
 
-    let yScale = d3.scaleLinear().domain([0,modulo-1]).range([0, this.svg_height/2]);
+    let yScale = d3.scaleLinear().domain([modulo-1,0]).range([0, 3/4*this.svg_height]);
     let yAxis = d3.axisLeft(yScale).ticks(modulo-1);
 
     d3.select(curve).append('g')
         .attr('class','x axis')
-        .attr("transform", "translate(0," + this.svg_height/2 + ")")
+        .attr("transform", "translate(40," + (3/4*this.svg_height+20) + ")")
         .call(xAxis)
         /*
       .append("text")
@@ -64,6 +64,7 @@ class CurvePicture extends React.Component {
 
     d3.select(curve).append("g")
         .attr("class", "y axis")
+        .attr("transform", "translate(40,20)")
         .call(yAxis)
       .append("text")
         .attr("class", "label")
@@ -80,10 +81,10 @@ class CurvePicture extends React.Component {
       .enter()
       .append("circle")
       .attr("cx",function(d){
-            return(xScale(d[0]))
+            return(xScale(d[0])+40)
           })
       .attr("cy",function(d){
-            return(yScale(d[1]))
+            return(yScale(d[1])+20)
           })
       .attr("r",5)
 

@@ -19,8 +19,8 @@ class App extends Component {
       parameters : {  m: 3,
                       lambda: 2,
                       a: 0,
-                      b: 0,
-                      modulo: 5
+                      b: 1,
+                      modulo: 7
                     },
       points : {}
     }

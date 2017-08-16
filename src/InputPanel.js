@@ -40,7 +40,7 @@ class InputPanel extends React.Component {
                       onChange={(e) => this.lambda = parseInt(e.target.value)}/>
           </span>
           <span>
-            <TextField defaultValue={this.lambda}
+            <TextField defaultValue={this.m}
                       style={inputBoxStyle}
                       floatingLabelText="m"
                       onChange={(e) => this.m = parseInt(e.target.value)}/>

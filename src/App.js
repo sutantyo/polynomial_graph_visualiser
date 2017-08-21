@@ -16,11 +16,11 @@ class App extends Component {
     this.inputHandler = this.inputHandler.bind(this);
     this.curveDrawer = this.curveDrawer.bind(this);
     this.state = {
-      parameters : {  m: 3,
-                      lambda: 2,
+      parameters : {  m: 1,
+                      lambda: 3,
                       a: 0,
                       b: 1,
-                      modulo: 7
+                      modulo: 5
                     },
       points : {}
     }

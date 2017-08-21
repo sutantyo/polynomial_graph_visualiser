@@ -8,7 +8,7 @@ class GraphPicture extends React.Component {
   constructor(){
     super();
     this.drawGraph = this.drawGraph.bind(this);
-    this.svg_height = 800;
+    this.svg_height = 600;
     this.svg_width = 960;
   }
 
@@ -37,8 +37,6 @@ class GraphPicture extends React.Component {
     this.nodes = graph.nodes;
     this.links = graph.links;
     this.points = graph.points;
-    console.log(this.points);
-
     this.drawGraph();
   }
 
@@ -180,8 +178,10 @@ var path = d3.select(graph).append("svg:g").selectAll("path")
 
   render(){
     let mx = "";
-    if (this.props.parameters.m > 0)
+    if (this.props.parameters.m > 1)
       mx = mx + "x<sup>" + this.props.parameters.m + "</sup>";
+    if (this.props.parameters.m == 1)
+      mx = mx + "x";
 
     let lx = this.props.parameters.lambda;
 
@@ -226,6 +226,7 @@ let inverse_of = [];
 // Thus the parameters for this function are m, n, lambda, b, a, and the modulus p
 function createGraph(m,lambda,a,b,p){
 
+  console.log("Creating graph with m: " + m + ", lambda: " + lambda + ", a: " + a + ", b: " + b + ",p: " + p);
   // compute the square_of table
    for (let i = 0; i <= (p-1)/2; i++){
      square_of[i] = (i * i) % p;
@@ -265,6 +266,7 @@ function createGraph(m,lambda,a,b,p){
     for (let exp = 0; exp < m; exp++){
         rhs = (rhs * x) % p;
     }
+    //console.log("x^m is " + rhs);
     rhs = (rhs + a*x + b)%p;
     // if rhs is a quadratic nonresidue, multiply by inverse of lambda
     let edge_colour = "gray";
@@ -282,8 +284,8 @@ function createGraph(m,lambda,a,b,p){
     //console.log("added x: " + x + ", y2: " + y2);
     links.push({source:x,target:y2,colour:edge_colour});
 
-    points.add([x,y1]);
-    points.add([x,y2]);
+    points.add(x+','+y1);
+    points.add(x+','+y2);
   }
   /*
   console.log("m: " + m + ", lambda: " + lambda + ", a: " + a + ", b: " + b + ",p: " + p);
